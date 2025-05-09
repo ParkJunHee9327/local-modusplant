@@ -1,6 +1,6 @@
 package kr.modusplant.global.middleware.security;
 
-import kr.modusplant.global.advice.GlobalExceptionHandler;
+import kr.modusplant.global.error.GlobalExceptionHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -60,9 +60,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(eh ->
                         eh.authenticationEntryPoint((request, response, authException) ->
-                                globalExceptionHandler.handleGenericException(request, authException))
-                        .accessDeniedHandler((request, response, accessDeniedException) ->
-                                globalExceptionHandler.handleGenericException(request, accessDeniedException))
+                                        globalExceptionHandler.handleGenericException(request, authException))
+                                .accessDeniedHandler((request, response, accessDeniedException) ->
+                                        globalExceptionHandler.handleGenericException(request, accessDeniedException))
                 )
                 .headers(headers -> headers
                         .httpStrictTransportSecurity(hsts -> hsts
