@@ -1,6 +1,8 @@
-package kr.modusplant.global.middleware.security;
+package kr.modusplant.global.middleware.security.config;
 
-import kr.modusplant.global.error.GlobalExceptionHandler;
+import kr.modusplant.global.advice.GlobalExceptionHandler;
+import kr.modusplant.global.middleware.security.JsonEmailAuthFilter;
+import kr.modusplant.global.middleware.security.SiteMemberAuthProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +18,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -27,6 +30,8 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final GlobalExceptionHandler globalExceptionHandler;
+    private final JsonEmailAuthFilter jsonEmailAuthFilter;
+    private final SiteMemberAuthProvider siteMemberAuthProvider;
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
@@ -47,6 +52,7 @@ public class SecurityConfig {
     public SecurityFilterChain defaultChain(HttpSecurity http) throws Exception {
         http
                 .securityMatcher("/api/*")
+                .addFilterBefore(jsonEmailAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/terms").permitAll()
                         .requestMatchers("/api/members/*").permitAll()
@@ -55,6 +61,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/token/refresh").authenticated()
                         .anyRequest().authenticated()
                 )
+                .authenticationProvider(siteMemberAuthProvider)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
