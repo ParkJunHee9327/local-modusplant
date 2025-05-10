@@ -9,8 +9,13 @@ import java.util.Collection;
 
 @Component
 public class SiteMemberAuthToken extends AbstractAuthenticationToken {
-    private final String email;
-    private final String password;
+    private String email;
+    private String password;
+
+    protected SiteMemberAuthToken() {
+        super(null);
+        setAuthenticated(false);
+    }
 
     // 인증 전
     public SiteMemberAuthToken(String email, String password) {
