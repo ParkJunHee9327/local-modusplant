@@ -1,8 +1,10 @@
 package kr.modusplant.global.middleware.security.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.modusplant.global.advice.GlobalExceptionHandler;
 import kr.modusplant.global.middleware.security.JsonEmailAuthFilter;
 import kr.modusplant.global.middleware.security.SiteMemberAuthProvider;
+import kr.modusplant.global.middleware.security.SiteMemberUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -28,10 +30,9 @@ public class SecurityConfig {
     @Value("${security.debug.enabled}")
     private Boolean debugEnabled;
 
-    private final AuthenticationConfiguration authenticationConfiguration;
+    private final AuthenticationConfiguration authConfiguration;
     private final GlobalExceptionHandler globalExceptionHandler;
-    private final JsonEmailAuthFilter jsonEmailAuthFilter;
-    private final SiteMemberAuthProvider siteMemberAuthProvider;
+    private final SiteMemberUserDetailsService memberUserDetailsService;
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
@@ -44,15 +45,31 @@ public class SecurityConfig {
     }
 
     @Bean
-    AuthenticationManager authenticationManager() throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager() throws Exception {
+        return authConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public SiteMemberAuthProvider siteMemberAuthProvider() {
+        return new SiteMemberAuthProvider(memberUserDetailsService, passwordEncoder());
+    }
+
+    @Bean
+    public JsonEmailAuthFilter jsonEmailAuthFilter(HttpSecurity http) {
+        try {
+            JsonEmailAuthFilter jsonEmailAuthFilter = new JsonEmailAuthFilter(new ObjectMapper(), authenticationManager());
+            jsonEmailAuthFilter.setAuthenticationManager(authenticationManager());
+            return jsonEmailAuthFilter;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Bean
     public SecurityFilterChain defaultChain(HttpSecurity http) throws Exception {
         http
                 .securityMatcher("/api/*")
-                .addFilterBefore(jsonEmailAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jsonEmailAuthFilter(http), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/terms").permitAll()
                         .requestMatchers("/api/members/*").permitAll()
@@ -61,7 +78,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/token/refresh").authenticated()
                         .anyRequest().authenticated()
                 )
-                .authenticationProvider(siteMemberAuthProvider)
+                .authenticationProvider(siteMemberAuthProvider())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
