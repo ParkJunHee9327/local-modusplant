@@ -1,17 +1,15 @@
-package kr.modusplant.modules.auth.normal.app.service;
+package kr.modusplant.modules.auth.normal.signup.app.service;
 
-import kr.modusplant.domains.member.app.http.request.SiteMemberAuthInsertRequest;
 import kr.modusplant.domains.member.app.http.response.SiteMemberResponse;
 import kr.modusplant.domains.member.app.service.SiteMemberApplicationService;
 import kr.modusplant.domains.member.app.service.SiteMemberAuthApplicationService;
 import kr.modusplant.domains.member.app.service.SiteMemberTermApplicationService;
-import kr.modusplant.domains.member.domain.model.SiteMember;
 import kr.modusplant.domains.term.app.http.response.TermResponse;
 import kr.modusplant.domains.term.app.service.TermApplicationService;
-import kr.modusplant.modules.auth.normal.app.http.request.NormalSignUpRequest;
-import kr.modusplant.modules.auth.normal.mapper.domain.SiteMemberAuthDomainMapper;
-import kr.modusplant.modules.auth.normal.mapper.domain.SiteMemberDomainMapper;
-import kr.modusplant.modules.auth.normal.mapper.domain.SiteMemberTermDomainMapper;
+import kr.modusplant.modules.auth.normal.signup.app.http.request.NormalSignUpRequest;
+import kr.modusplant.modules.auth.normal.signup.mapper.domain.SiteMemberAuthDomainMapper;
+import kr.modusplant.modules.auth.normal.signup.mapper.domain.SiteMemberDomainMapper;
+import kr.modusplant.modules.auth.normal.signup.mapper.domain.SiteMemberTermDomainMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

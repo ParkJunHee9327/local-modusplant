@@ -53,7 +53,7 @@ public class SiteMemberUserDetailsService implements UserDetailsService {
         return SiteMemberUserDetails.builder()
                 .email(memberAuth.getEmail())
                 .password(memberAuth.getPw())
-                .isActive(member.getIsActive())
+                .activeUuid(memberAuth.getActiveMemberUuid())
                 .nickname(member.getNickname())
                 .provider(memberAuth.getProvider())
                 .isActive(member.getIsActive())
