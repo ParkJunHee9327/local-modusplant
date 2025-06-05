@@ -1,12 +1,14 @@
 package kr.modusplant.modules.jwt.app.service;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import jakarta.annotation.PostConstruct;
-import kr.modusplant.modules.jwt.app.error.InvalidTokenException;
-import kr.modusplant.modules.jwt.app.error.TokenKeyCreationException;
+import kr.modusplant.modules.jwt.error.InvalidTokenException;
+import kr.modusplant.modules.jwt.error.TokenKeyCreationException;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -17,14 +19,17 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TokenProvider {
-    private static final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
     @Value("${jwt.iss}")
     private String iss;
+
     @Value("${jwt.aud}")
     private String aud;
+
     @Value("${jwt.access_duration}")
     private long accessDuration;
+
     @Value("${jwt.refresh_duration}")
     private long refreshDuration;
 
@@ -41,7 +46,7 @@ public class TokenProvider {
             privateKey = keyPair.getPrivate();
             publicKey = keyPair.getPublic();
         } catch (NoSuchAlgorithmException e) {
-            throw new TokenKeyCreationException("Failed to create RefreshToken KeyPair",e);
+            throw new TokenKeyCreationException("Failed to create RefreshToken KeyPair", e);
         }
     }
 
@@ -81,16 +86,16 @@ public class TokenProvider {
     // 토큰 검증하기
     public boolean validateToken(String token) {
         try {
-            Jws<Claims> claimsJws = Jwts.parser()
+            Jwts.parser()
                     .verifyWith(publicKey)
                     .build()
                     .parseSignedClaims(token);
             return true;
         } catch(ExpiredJwtException e) {
-            logger.warn("만료된 JWT 토큰입니다.");
+            log.warn("만료된 JWT 토큰입니다.");
             return false;
         } catch (JwtException e) {
-            logger.error("유효하지 않은 JWT 토큰입니다 : {}", e.getMessage());
+            log.error("유효하지 않은 JWT 토큰입니다 : {}", e.getMessage());
             throw new InvalidTokenException("Invalid JWT RefreshToken");
         }
     }
@@ -104,10 +109,10 @@ public class TokenProvider {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch(ExpiredJwtException e) {
-            logger.warn("만료된 JWT 토큰입니다");
+            log.warn("만료된 JWT 토큰입니다");
             throw new InvalidTokenException("Expired JWT RefreshToken");
         } catch (JwtException e) {
-            logger.error("유효하지 않은 JWT 토큰입니다 : {}", e.getMessage());
+            log.error("유효하지 않은 JWT 토큰입니다 : {}", e.getMessage());
             throw new InvalidTokenException("Invalid JWT RefreshToken");
         }
     }
